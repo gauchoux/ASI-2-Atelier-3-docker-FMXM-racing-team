@@ -1,0 +1,82 @@
+version: '3'
+services:
+  activemq:
+    image: symptoma/activemq:latest
+    container_name: asi_activemq
+    ports:
+      - "61616:61616"
+      - "8161:8161"
+    environment:
+      - ACTIVEMQ_DISALLOW_WEBCONSOLE=false
+      - ACTIVEMQ_USERNAME=admin
+      - ACTIVEMQ_PASSWORD=admin
+      - ACTIVEMQ_WEBADMIN_USERNAME=admin
+      - ACTIVEMQ_WEBADMIN_PASSWORD=admin
+    networks:
+      - custom-net
+      
+  frontend:
+    container_name: asi_frontend
+    build:
+      context: ../ASI-2-Atelier-1-front-FMXM-racing-team
+    ports:
+      - "3000:3000"
+    networks:
+      - custom-net
+
+  authservice:
+    container_name: asi_authservice
+    build:
+      context: ../ASI-2-Atelier-1-back-FMXM-racing-team/authservice
+    depends_on:
+      - activemq
+    networks:
+      - custom-net
+
+  cardservice:
+    container_name: asi_cardservice
+    build:
+      context: ../ASI-2-Atelier-1-back-FMXM-racing-team/cardservice
+    depends_on:
+      - activemq
+    networks:
+      - custom-net
+      
+  storeservice:
+    container_name: asi_storeservice
+    build:
+      context: ../ASI-2-Atelier-1-back-FMXM-racing-team/storeservice
+    depends_on:
+      - activemq
+    networks:
+      - custom-net
+
+  userservice:
+    container_name: asi_userservice
+    build:
+      context: ../ASI-2-Atelier-1-back-FMXM-racing-team/userservice
+    depends_on:
+      - activemq
+    networks:
+      - custom-net
+      
+  proxy:
+    image: nginx:latest
+    container_name: asi_nginx
+    ports:
+      - "3005:3005"
+    volumes:
+      - ../ASI-2-Atelier-3-nginx-FMXM-racing-team/nginx.conf:/etc/nginx/conf.d/default.conf
+    restart: always
+    depends_on:
+      - authservice
+      - cardservice
+      - storeservice
+      - userservice
+    networks:
+      - custom-net
+
+networks:
+  custom-net:
+    name: custom-net
+    driver: bridge
