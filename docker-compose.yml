@@ -15,12 +15,32 @@ services:
     networks:
       - custom-net
       
+  proxy:
+    image: nginx:latest
+    container_name: asi_nginx
+    ports:
+      - "3005:3005"
+    volumes:
+      - ../ASI-2-Atelier-3-nginx-FMXM-racing-team/nginx.conf:/etc/nginx/conf.d/default.conf
+    restart: always
+    networks:
+      - custom-net
+      
   frontend:
     container_name: asi_frontend
     build:
       context: ../ASI-2-Atelier-1-front-FMXM-racing-team
     ports:
       - "3000:3000"
+    networks:
+      - custom-net
+      
+  nodejs:
+    container_name: asi_nodejs
+    build:
+      context: ../ASI-2-Atelier-2-nodeJS-FMXM-racing-team
+    depends_on:
+      - activemq
     networks:
       - custom-net
 
@@ -57,22 +77,6 @@ services:
       context: ../ASI-2-Atelier-1-back-FMXM-racing-team/userservice
     depends_on:
       - activemq
-    networks:
-      - custom-net
-      
-  proxy:
-    image: nginx:latest
-    container_name: asi_nginx
-    ports:
-      - "3005:3005"
-    volumes:
-      - ../ASI-2-Atelier-3-nginx-FMXM-racing-team/nginx.conf:/etc/nginx/conf.d/default.conf
-    restart: always
-    depends_on:
-      - authservice
-      - cardservice
-      - storeservice
-      - userservice
     networks:
       - custom-net
 
